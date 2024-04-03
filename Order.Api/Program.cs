@@ -16,12 +16,12 @@ builder.Services.AddMassTransit(configurator =>
 
     configurator.UsingRabbitMq((context, _configure) =>
     {
-        _configure.Host(builder.Configuration["RabbitMQ"]);
+        _configure.Host(builder.Configuration["RabbitMq"]);
 
     });
 });
 
-builder.Services.AddDbContext<OrderDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MSSQLServer")));
+builder.Services.AddDbContext<OrderDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlServer")));
 
 
 var app = builder.Build();
