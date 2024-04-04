@@ -1,3 +1,4 @@
+using MassTransit;
 using Order.Outbox.Table.Publisher.Jobs;
 using Quartz;
 
@@ -17,6 +18,15 @@ builder.Services.AddQuartz(configurator =>
 });
 
 builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
+
+builder.Services.AddMassTransit(configurator =>
+{
+    configurator.UsingRabbitMq((context, _configure) =>
+    {
+        _configure.Host(builder.Configuration["RabbitMq"]);
+
+    });
+});
 
 //Order.Outbox.Table.Publisher amacý belirli periyotlarla OrderOutboxes tablosundaki verileri kontrol edip, belirli bir kurala göre RabbitMQ'ya mesaj göndermektir.
 var host = builder.Build();
