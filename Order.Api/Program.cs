@@ -43,7 +43,7 @@ app.MapPost("/create-order", async (CreateOrderVm model, OrderDbContext context,
             ProductId = oi.ProductId,
         }).ToList(),
     };
-
+    //Dual write to database
     await context.Orders.AddAsync(order);
     await context.SaveChangesAsync();
 
@@ -59,7 +59,7 @@ app.MapPost("/create-order", async (CreateOrderVm model, OrderDbContext context,
             ProductId = oi.ProductId
         }).ToList()
     };
-
+    //Dual write to RabbitMq
     var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMqSettings.Stock_OrderCreatedEvent}"));
     await sendEndpoint.Send<OrderCreatedEvent>(orderCreatedEvent);
 
