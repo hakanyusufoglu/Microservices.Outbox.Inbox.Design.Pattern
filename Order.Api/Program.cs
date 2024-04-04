@@ -5,6 +5,7 @@ using Order.Api.Models.Entities;
 using Order.Api.ViewModels;
 using Shared;
 using Shared.Events;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,6 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddMassTransit(configurator =>
 {
-
     configurator.UsingRabbitMq((context, _configure) =>
     {
         _configure.Host(builder.Configuration["RabbitMq"]);
@@ -59,9 +59,31 @@ app.MapPost("/create-order", async (CreateOrderVm model, OrderDbContext context,
             ProductId = oi.ProductId
         }).ToList()
     };
-    //Dual write to RabbitMq
-    var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMqSettings.Stock_OrderCreatedEvent}"));
-    await sendEndpoint.Send<OrderCreatedEvent>(orderCreatedEvent);
+
+    #region order'ý veritabanýna kaydettikten sonra evente gönderilme iþlemi (Outbox Pattern Olmadýðý senaryo)
+
+    // (veri güvenliðinde soruna neden olabilir. Çünkü dual write iþlemi var veri tabanýna kaydettikten sonra message bus ile iletiþim kurulmasý veri iþlenemeyecek. Bu durumu önlemek adýna outbox design pattern kullanýlacak) Bu region yorum satýrýna alýndý çünkü outbox design pattern kullanýcak. Yorum satýrlý kodlarýn býrakýlmasý best practise deðildir ve kod okunabilirliðini azaltýr.
+
+
+
+    ////Dual write to RabbitMq
+    //var sendEndpoint = await sendEndpointProvider.GetSendEndpoint(new Uri($"queue:{RabbitMqSettings.Stock_OrderCreatedEvent}"));
+    //await sendEndpoint.Send<OrderCreatedEvent>(orderCreatedEvent);
+
+
+    #endregion
+
+    //Outbox Pattern - Veri güvenliði için veriyi fiziksel olarak db'ye kaydettikten sonra eventi gönderme iþlemi gerçekleþtirilecek.
+    OrderOutbox orderOutbox = new()
+    {
+        OccuredOn = DateTime.UtcNow,
+        ProcessDate = null,
+        Payload = JsonSerializer.Serialize(orderCreatedEvent),
+        Type = orderCreatedEvent.GetType().Name
+    };
+
+    await context.OrderOutboxes.AddAsync(orderOutbox);
+    await context.SaveChangesAsync();
 
 });
 
