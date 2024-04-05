@@ -2,7 +2,7 @@
 {
     public class OrderOutbox
     {
-        public int Id { get; set; }
+        public Guid IdempotentToken { get; set; }
         //Ne zaman bu event gönderildi. İlgili eventin oluşturulduğu tarih.
         public DateTime OccuredOn { get; set; }
         //Eventin işlendiği tarih. İşlenmediyse null olabilir.

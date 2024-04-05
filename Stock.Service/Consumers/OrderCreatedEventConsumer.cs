@@ -11,15 +11,20 @@ namespace Stock.Service.Consumers
     {
         public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
         {
-            //Gelen veriyi inbox pattern gereği stock servis db'sine kaydediyoruz.
-            await stockDbContext.OrderInboxes.AddAsync(new()
+            //IdempotentToken kontrolü yapıyoruz. Eğer daha önce işlenmiş bir mesaj ise işlem yapmıyoruz.
+            var result = await stockDbContext.OrderInboxes.AnyAsync(i => i.IdempotentToken == context.Message.IdempotentToken);
+
+            if (!result)
             {
-                Processed = false,
-                Payload = JsonSerializer.Serialize(context.Message)
-            });
+                //Gelen veriyi inbox pattern gereği stock servis db'sine kaydediyoruz.
+                await stockDbContext.OrderInboxes.AddAsync(new()
+                {
+                    Processed = false,
+                    Payload = JsonSerializer.Serialize(context.Message)
+                });
 
-            await stockDbContext.SaveChangesAsync();
-
+                await stockDbContext.SaveChangesAsync();
+            }
 
             //Gelen veriyi işleyip stok proccessed güncellemesi yapılıyor.
             //Todo: Bu işlemi bir servise taşıyarak daha iyi bir yapıya kavuşturabiliriz.
@@ -29,7 +34,7 @@ namespace Stock.Service.Consumers
             {
                 OrderCreatedEvent orderCreatedEvent = JsonSerializer.Deserialize<OrderCreatedEvent>(orderInbox.Payload);
 
-                await Console.Out.WriteLineAsync($"{orderCreatedEvent.OrderId} order id değerine karşılık olan siparişin stok işlemleri başarıyla tamamlanmıştır");
+                await Console.Out.WriteLineAsync($"{orderCreatedEvent.IdempotentToken} order id değerine karşılık olan siparişin stok işlemleri başarıyla tamamlanmıştır");
                 orderInbox.Processed = true;
 
                 await stockDbContext.SaveChangesAsync();
