@@ -12,8 +12,8 @@ using Order.Api.Models.Contexts;
 namespace Order.Api.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20240404113936_added_table_orderOutboxes")]
-    partial class added_table_orderOutboxes
+    [Migration("20240405055441_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,6 +76,12 @@ namespace Order.Api.Migrations
 
             modelBuilder.Entity("Order.Api.Models.Entities.OrderOutbox", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTime>("OccuredOn")
                         .HasColumnType("datetime2");
 
@@ -89,6 +95,8 @@ namespace Order.Api.Migrations
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("OrderOutboxes");
                 });
