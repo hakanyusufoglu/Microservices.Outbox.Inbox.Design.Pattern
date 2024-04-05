@@ -8,6 +8,11 @@ namespace Order.Api.Models.Contexts
         public OrderDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        override protected void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrderOutbox>().HasKey(o => o.IdempotentToken);
+        }
         public DbSet<Entities.Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<OrderOutbox> OrderOutboxes { get; set; }
