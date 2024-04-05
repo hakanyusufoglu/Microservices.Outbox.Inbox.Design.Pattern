@@ -20,7 +20,8 @@ namespace Stock.Service.Consumers
                 await stockDbContext.OrderInboxes.AddAsync(new()
                 {
                     Processed = false,
-                    Payload = JsonSerializer.Serialize(context.Message)
+                    Payload = JsonSerializer.Serialize(context.Message),
+                    IdempotentToken= context.Message.IdempotentToken
                 });
 
                 await stockDbContext.SaveChangesAsync();
