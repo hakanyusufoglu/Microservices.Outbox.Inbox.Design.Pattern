@@ -1,8 +1,12 @@
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using Shared;
 using Stock.Service.Consumers;
+using Stock.Service.Models.Contexts;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddDbContext<StockDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MsSqlServer")));
 
 builder.Services.AddMassTransit(configurator =>
 {
