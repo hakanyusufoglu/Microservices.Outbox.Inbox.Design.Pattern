@@ -20,7 +20,9 @@ namespace Stock.Service.Consumers
 
             await stockDbContext.SaveChangesAsync();
 
-            //Gelen veriyi işleyip stok güncellemesi yapılabilir.
+
+            //Gelen veriyi işleyip stok proccessed güncellemesi yapılıyor.
+            //Todo: Bu işlemi bir servise taşıyarak daha iyi bir yapıya kavuşturabiliriz.
             List<OrderInbox> orderInboxes = await stockDbContext.OrderInboxes.Where(x => x.Processed == false).ToListAsync();
 
             foreach (var orderInbox in orderInboxes)
