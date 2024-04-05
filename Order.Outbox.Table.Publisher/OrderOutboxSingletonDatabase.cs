@@ -11,7 +11,7 @@ namespace Order.Outbox.Table.Publisher
         //Datareader hazır mı değil mi kontrolü için
         static bool _dataReaderState = true;
 
-        static OrderOutboxSingletonDatabase() => _connection = new SqlConnection("Server=localhost;Database=OutboxInboxPatternDb;Trusted_Connection=True;TrustServerCertificate=True;"); //appsettings.json'dan alınması best practise.
+        static OrderOutboxSingletonDatabase() => _connection = new SqlConnection("Server=localhost;Database=OrderOutboxPatternDb;Trusted_Connection=True;TrustServerCertificate=True;"); //appsettings.json'dan alınması best practise.
 
         public static IDbConnection Connection
         {
